@@ -1,6 +1,6 @@
 #ifndef GPT_INTERFACE_H_
 #define GPT_INTERFACE_H_ 
-#include "../../LIB/STD_TYPES.h"
+#include "../../LIB/std_types.h"
 #include "GPT_config.h"
 typedef enum __gptError{
     GPT_OK = 0,

@@ -1,12 +1,12 @@
-#include "../../UTILITIES/STD_TYPES.h"
-#include "../../UTILITIES/BIT_MATH.h"
+#include "../../LIB/STD_TYPES.h"
+#include "../../LIB/BIT_MATH.h"
 #include "GPT_private.h"
 #include "GPT_interface.h"
 #include "GPT_config.h"
 
 #define     TIMER_ADDR(TIMER_NUM)                      ( (TIMER_NUM < GPT_TIMER0_W) ? (TIMER(TIMER_NUM)) : ( TIMER_W( (TIMER_NUM - GPT_TIMER0_W) ) ) )
-void (*ptr_func_gl_timerACallBacks[GPT_TIMER_NUM])(void) = {NULL_PTR};
-void (*ptr_func_gl_timerBCallBacks[GPT_TIMER_NUM])(void) = {NULL_PTR};
+void (*ptr_func_gl_timerACallBacks[GPT_TIMER_NUM])(void) = {NULL};
+void (*ptr_func_gl_timerBCallBacks[GPT_TIMER_NUM])(void) = {NULL};
 
 enu_gptError_t GPT_init()
 {
