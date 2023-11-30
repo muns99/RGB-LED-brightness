@@ -23,7 +23,12 @@
 -TYPEDEFS
 ------------------------*/
 typedef unsigned char    boolean;
-
+void debounce()
+{
+    for (uint16_t i = 0 ; i < 10000 ; i++)
+        for(uint16_t j = 0 ; j < 100 ; j++)
+            for (uint16_t k = 0 ; k < 2 ; k++);
+}
 /*-----------------------
 -BIT OPERATIONS
 ------------------------*/
