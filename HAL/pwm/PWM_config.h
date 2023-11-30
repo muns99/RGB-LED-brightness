@@ -1,6 +1,6 @@
 #ifndef PWM_CONFIG_H
 #define PWM_CONFIG_H
-#include "../../UTILITIES/STD_TYPES.h"
+#include "../../LIB/STD_TYPES.h"
 typedef enum __pwmTimer{
     PWM_TM0 = 0,
     PWM_TM1,
@@ -48,3 +48,4 @@ typedef struct __pwmCFG{
 
 
 #endif
+

@@ -15,4 +15,4 @@ typedef struct __tmu
     uint64_t maxTime;
     enu_tmuInstanceState_t state;
     enu_timerinterrupt_t timerInterrupt;
-}st_tmu_t;;
+}st_tmu_t;

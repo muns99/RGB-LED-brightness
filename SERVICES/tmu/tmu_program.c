@@ -1,4 +1,4 @@
-#include "../STD_TYPES.h"
+#include "../../LIB/std_types.h"
 #include "../../MCAL/gpt/GPT_interface.h"
 #include "tmu_interface.h"
 #include "tmu_config.h"
@@ -23,7 +23,7 @@ enu_tmuErrorState_t TMU_createTask(st_tmuTask_t *st_a_taskInstance)
         {
             if (st_a_taskInstance->uint8_a_taskId < TMU_INSTANCES)
             {
-                sint8_t uint8_a_firstFreeTmuInstance;
+                uint8_t uint8_a_firstFreeTmuInstance;
                 for ( uint8_a_firstFreeTmuInstance = 0; uint8_a_firstFreeTmuInstance < TMU_INSTANCES; uint8_a_firstFreeTmuInstance++)
                 {
                     if (st_gl_tmuInstances[uint8_a_firstFreeTmuInstance].state == TMU_INSTANCE_NOT_INITIALIZED)

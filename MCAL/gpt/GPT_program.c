@@ -26,8 +26,10 @@ enu_gptError_t GPT_initTimer(str_timer_t *str_a_timer)
         {
             if (str_a_timer->timerChannel == TIMER_CH_A || str_a_timer->timerChannel == TIMER_CONC)
             {
-				        (str_a_timer->timerId < GPT_TIMER0_W) ? SET_BIT(GPT_RCGCTIMER, str_a_timer->timerId) 
-							                                       :  SET_BIT(GPT_RCGCWTIMER, (str_a_timer->timerId - GPT_TIMER0_W)); 
+				        if(str_a_timer->timerId < GPT_TIMER0_W)
+									SET_BIT(GPT_RCGCTIMER, str_a_timer->timerId);
+								else
+									SET_BIT(GPT_RCGCWTIMER, (str_a_timer->timerId - GPT_TIMER0_W)); 
                 CLR_BIT(TIMER_ADDR(str_a_timer->timerId)->GPTMCTL,TAEN);
                 TIMER_ADDR(str_a_timer->timerId)->GPTMCFG = ONE_SHOT_OR_PERIODIC_MODE_CONFIG;
                 TIMER_ADDR(str_a_timer->timerId)->GPTMTAMR &= GPTMTAMR_MASK;
@@ -267,7 +269,7 @@ enu_gptError_t GPT_getTimerElapsed(enu_timerID_t enu_a_timerID, enu_timerChannel
 enu_gptError_t GPT_getTimerRemaining(enu_timerID_t enu_a_timerID, enu_timerChannel_t enu_a_timerChannel, uint64_t* ptr_uint64_a_remainingTime)
 {
     enu_gptError_t enu_a_funcRet = GPT_OK;
-    if ((NULL_PTR != ptr_uint64_a_remainingTime) && (enu_a_timerID <= GPT_TIMER5_W) && (enu_a_timerChannel <= TIMER_CONC))
+    if ((NULL != ptr_uint64_a_remainingTime) && (enu_a_timerID <= GPT_TIMER5_W) && (enu_a_timerChannel <= TIMER_CONC))
     {
         if ( (enu_a_timerChannel == TIMER_CH_A) || (enu_a_timerChannel == TIMER_CONC) )
         {

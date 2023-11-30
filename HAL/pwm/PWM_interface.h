@@ -1,5 +1,5 @@
-#ifndef PWM_INTERFACE_H
-#define PWM_INTERFACE_H
+#ifndef PWM_ITERFACE_H
+#define PWM_ITERFACE_H
 
 typedef enum __pwmError{
     PWM_OK = 0,
@@ -16,3 +16,4 @@ enu_pwmError_t  PWM_turnOff(void);
 
 
 #endif
+
