@@ -8,6 +8,7 @@
 uint8_t uint8_gl_appSequenceCounter = 0;
 uint16_t uint16_gl_duty = LED_OFF;
 uint16_t uint16_appTime = 0;
+void (*ptr_func_appSequenceFunctions[])(void) = {APP_firstPress,APP_secondPress,APP_thirdPress,APP_fourthPress,APP_fifthPress};
 
 void APP_firstPress(void)
 {
@@ -29,7 +30,6 @@ void APP_fifthPress(void)
 {
 
 }
-void (*ptr_func_appSequenceFunctions[])(void) = {APP_firstPress,APP_secondPress,APP_thirdPress,APP_fourthPress,APP_fifthPress};
 void APP_sequence(void)
 {
     if (uint8_gl_appSequenceCounter < APP_SEQUENCE_COUNT)
