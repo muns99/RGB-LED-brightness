@@ -82,5 +82,15 @@ typedef enum __gpioRegOffset
 
 #define ACCESS_REG(_port_ , _reg_) 	   *((volatile uint32_t*)((GPIO_PORT_OFFSET(_port_)) + (_reg_)))
 
+void digitalInputPinInit(st_gpioPinConfig_t *st_a_pin);
+void digitalOutput2maPinInit(st_gpioPinConfig_t *st_a_pin);
+void digitalOutput4maPinInit(st_gpioPinConfig_t *st_a_pin);
+void digitalOutput8maPinInit(st_gpioPinConfig_t *st_a_pin);
+void analogInputPinInit(st_gpioPinConfig_t *st_a_pin);
+void inputPullUpPinInit(st_gpioPinConfig_t *st_a_pin);
+void inputPullDownPinInit(st_gpioPinConfig_t *st_a_pin);
+void interruptFallingEdgePinInit(st_gpioPinConfig_t *st_a_pin);
+void interruptRisingEdgePinInit(st_gpioPinConfig_t *st_a_pin);
+void interruptBothEdgesPinInit(st_gpioPinConfig_t *st_a_pin);
 
 #endif // !GPIO_PRIVATE_H_

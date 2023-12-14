@@ -1,5 +1,6 @@
 #ifndef GPIO_INTERFACE_H_
 #define GPIO_INTERFACE_H_ 
+#include "../../LIB/std_types.h"
 
 
 typedef enum __systemErrorState
