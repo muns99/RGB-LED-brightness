@@ -1,11 +1,26 @@
 #include "../../LIB/std_types.h"
 #include "../../LIB/bit_math.h"
+#include "gpio_interface.h"
 #include "gpio_private.h"
 #include "gpio_config.h"
-#include "gpio_interface.h"
 
 #include "TM4C123.h"
 #include "core_cm4.h" 
+
+IRQn_Type enu_gl_gpioPortsIrq[]={GPIOA_IRQn,GPIOB_IRQn,GPIOC_IRQn,GPIOD_IRQn,GPIOE_IRQn,GPIOF_IRQn};
+const st_gpioConfig_t st_gl_cst_gpioConfig;
+void (*ptr_func_gl_gpioPortsHandlers[GPIO_PORTS][PORT_PINS])(void)={NULL};
+void (*ptr_func_gl_pinInitializationFunctions[])(st_gpioPinConfig_t *st_a_pin) =   {digitalInputPinInit,
+                                                                                    digitalOutput2maPinInit,
+                                                                                    digitalOutput4maPinInit,
+                                                                                    digitalOutput8maPinInit,
+                                                                                    analogInputPinInit,
+                                                                                    inputPullUpPinInit,
+                                                                                    inputPullDownPinInit,
+                                                                                    interruptRisingEdgePinInit,
+                                                                                    interruptFallingEdgePinInit,
+                                                                                    interruptBothEdgesPinInit
+                                                                                    }; 
 
 void digitalInputPinInit(st_gpioPinConfig_t *st_a_pin)
 {
@@ -100,26 +115,14 @@ void interruptBothEdgesPinInit(st_gpioPinConfig_t *st_a_pin)
 }
 
 
-IRQn_Type enu_gl_gpioPortsIrq[]={GPIOA_IRQn,GPIOB_IRQn,GPIOC_IRQn,GPIOD_IRQn,GPIOE_IRQn,GPIOF_IRQn};
-const st_gpioConfig_t st_gl_cst_gpioConfig;
-void (*ptr_func_gl_gpioPortsHandlers[GPIO_PORTS][PORT_PINS])(void)={NULL};
-void (*ptr_func_gl_pinInitializationFunctions[])(st_gpioPinConfig_t *st_a_pin) =   {digitalInputPinInit,
-                                                                                    digitalOutput2maPinInit,
-                                                                                    digitalOutput4maPinInit,
-                                                                                    digitalOutput8maPinInit,
-                                                                                    analogInputPinInit,
-                                                                                    inputPullUpPinInit,
-                                                                                    inputPullDownPinInit,
-                                                                                    interruptRisingEdgePinInit,
-                                                                                    interruptFallingEdgePinInit,
-                                                                                    interruptBothEdgesPinInit
-                                                                                    }; 
+
 
 
 enu_systemErrorState_t  GPIO_init()
 {
     enu_systemErrorState_t enu_a_functionRet = GPIO_SUCCESS;
-    for(uint8_t uint8_a_portIterator = 0 ; uint8_a_portIterator < GPIO_PORTS ; uint8_a_portIterator++)
+    uint8_t uint8_a_portIterator;
+    for(uint8_a_portIterator = GPIO_PORTA ; uint8_a_portIterator < GPIO_PORTS ; uint8_a_portIterator++)
     {
         enu_a_functionRet = GPIO_initPort(&st_gl_cst_gpioConfig.gpioPorts[uint8_a_portIterator]);
         if (enu_a_functionRet != GPIO_SUCCESS)
@@ -141,13 +144,14 @@ enu_systemErrorState_t  GPIO_init()
 enu_systemErrorState_t  GPIO_initPort(st_gpioPortConfig_t *st_a_port)
 {
     enu_systemErrorState_t enu_a_functionRet = GPIO_SUCCESS;
+    uint8_t uint8_a_pinIterator;
     if(st_a_port != NULL)
     {
         if (st_a_port->portNum < INVALID_PORT)
         {
             SET_BIT(RCGCGPIO_REG,st_a_port->portNum);
 
-            for(uint8_t uint8_a_pinIterator = 0 ; uint8_a_pinIterator < PORT_PINS ; uint8_a_pinIterator++)
+            for(uint8_a_pinIterator = 0 ; uint8_a_pinIterator < PORT_PINS ; uint8_a_pinIterator++)
             {
                 enu_a_functionRet = GPIO_initPin(&(st_a_port->portPins[uint8_a_pinIterator]));
                 if (enu_a_functionRet != GPIO_SUCCESS)
@@ -185,15 +189,21 @@ enu_systemErrorState_t  GPIO_initPin(st_gpioPinConfig_t *st_a_pin)
         {
             if (st_a_pin->pinNum < INVALID_PIN)
             {
-                if (st_a_pin->pinMode < INVALID_PIN_MODE)
+                if ((st_a_pin->port == GPIO_PORTE && st_a_pin->pinNum < GPIO_PIN6) || (st_a_pin->port == GPIO_PORTF && st_a_pin->pinNum < GPIO_PIN5))
                 {
-                    ptr_func_gl_pinInitializationFunctions[st_a_pin->pinMode](st_a_pin);
+                    if (st_a_pin->pinMode < INVALID_PIN_MODE)
+                    {
+                        ptr_func_gl_pinInitializationFunctions[st_a_pin->pinMode](st_a_pin);
+                    }
+                    else
+                    {
+                        enu_a_functionRet = GPIO_INVALID_STATE; 
+                    }
                 }
                 else
                 {
                     enu_a_functionRet = GPIO_INVALID_STATE; 
                 }
-                
             }
             else
             {
@@ -222,7 +232,7 @@ enu_systemErrorState_t  GPIO_setPinValue(enu_gpioPort_t enu_a_port,enu_pin_t enu
     
     if (enu_a_port < INVALID_PORT)
     {
-        if (GET_BIT(RCGCGPIO_REG,enu_a_port))   //check if the port was init 
+        if (GET_BIT(RCGCGPIO_REG,enu_a_port) == GPIO_HIGH)   //check if the port was init 
         {
             if (enu_a_pin < INVALID_PIN)
             {
@@ -277,7 +287,7 @@ enu_systemErrorState_t  GPIO_getPinValue(enu_gpioPort_t enu_a_port, enu_pin_t en
     {
         if (enu_a_pin < INVALID_PIN)
         {
-            if (GET_BIT(RCGCGPIO_REG,enu_a_port))   //check for port init
+            if (GET_BIT(RCGCGPIO_REG,enu_a_port) == GPIO_HIGH)   //check for port init
             {
                 if (uint8_a_value != NULL)
                 {
@@ -321,7 +331,7 @@ enu_systemErrorState_t  GPIO_togglePin(enu_gpioPort_t enu_a_port, enu_pin_t enu_
     enu_systemErrorState_t enu_a_functionRet = GPIO_SUCCESS;
     if (enu_a_port < INVALID_PORT)
     {
-        if (GET_BIT(RCGCGPIO_REG,enu_a_port))
+        if (GET_BIT(RCGCGPIO_REG,enu_a_port) == GPIO_HIGH)
         {
             if (enu_a_pin < INVALID_PIN)
             {
@@ -481,9 +491,10 @@ enu_systemErrorState_t GPIO_setPinCallBackFunction(enu_gpioPort_t enu_a_port , e
 
 void GPIOA_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTA,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTA,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTA][uint8_a_pinIndex] != NULL)
             {
@@ -496,9 +507,10 @@ void GPIOA_Handler(void)
 }
 void GPIOB_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTB,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTB,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTB][uint8_a_pinIndex] != NULL)
             {
@@ -511,9 +523,10 @@ void GPIOB_Handler(void)
 }
 void GPIOC_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTC,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTC,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTC][uint8_a_pinIndex] != NULL)
             {
@@ -526,9 +539,10 @@ void GPIOC_Handler(void)
 }
 void GPIOD_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < PORT_PINS; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTD,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTD,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTD][uint8_a_pinIndex] != NULL)
             {
@@ -541,9 +555,10 @@ void GPIOD_Handler(void)
 }
 void GPIOE_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < GPIO_PIN6; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < GPIO_PIN6; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTE,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTE,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTE][uint8_a_pinIndex] != NULL)
             {
@@ -556,9 +571,10 @@ void GPIOE_Handler(void)
 }
 void GPIOF_Handler(void)
 {
-    for (uint8_t uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < GPIO_PIN5; uint8_a_pinIndex++)
+    uint8_t uint8_a_pinIndex;
+    for (uint8_a_pinIndex = GPIO_PIN0; uint8_a_pinIndex < GPIO_PIN5; uint8_a_pinIndex++)
     {
-        if (GET_BIT(ACCESS_REG(GPIO_PORTF,GPIORIS),uint8_a_pinIndex))
+        if (GET_BIT(ACCESS_REG(GPIO_PORTF,GPIORIS),uint8_a_pinIndex) == GPIO_HIGH)
         {
             if (ptr_func_gl_gpioPortsHandlers[GPIO_PORTF][uint8_a_pinIndex] != NULL)
             {
