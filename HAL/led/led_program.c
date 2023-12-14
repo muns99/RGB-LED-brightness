@@ -2,10 +2,6 @@
 #include "../../MCAL/gpio/gpio_interface.h"
 #include "led_interface.h"
 
-void getledGpioPinStruct(st_led_t *st_a_led,st_gpioPinConfig_t *st_a_ledPin)
-{
-    
-}
 
 
 enu_ledErrorState_t LED_init(st_led_t *st_a_led)
@@ -83,7 +79,7 @@ enu_ledErrorState_t LED_toggle(st_led_t *st_a_led)
      enu_ledErrorState_t enu_a_functionRet = LED_SUCCESS;
     if (st_a_led != NULL)
     {
-        if (GPIO_togglePin(&st_a_led->ledPort,st_a_led->ledPin) != GPIO_SUCCESS)
+        if (GPIO_togglePin(st_a_led->ledPort,st_a_led->ledPin) != GPIO_SUCCESS)
         {
            enu_a_functionRet = LED_NOT_SUCCES;
         }
